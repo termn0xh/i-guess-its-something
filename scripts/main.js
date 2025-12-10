@@ -582,9 +582,17 @@ function setupEvents() {
     // Toggle Help Overlay
     const helpOverlay = document.querySelector('.help-overlay');
     const btnInfo = document.getElementById('btn-info');
+    const btnCloseHelp = document.querySelector('.btn-close-help');
+
     if (btnInfo && helpOverlay) {
         btnInfo.onclick = () => {
             helpOverlay.classList.toggle('visible');
+        };
+    }
+
+    if (btnCloseHelp && helpOverlay) {
+        btnCloseHelp.onclick = () => {
+            helpOverlay.classList.remove('visible');
         };
     }
 

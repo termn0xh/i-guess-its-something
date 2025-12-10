@@ -937,32 +937,59 @@ body {
 /* Help Modal */
 .help-overlay {
     position: fixed;
-    top: 2rem;
-    right: 2rem;
-    bottom: 80px;
-    /* Above the Info button */
-    left: 20px;
-    background: var(--bg-card);
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: var(--shadow-lg);
-    z-index: 1000;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -45%) scale(0.95);
+    width: 320px;
+    background: var(--bg-node);
+    padding: 24px 24px 30px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    z-index: 3000;
     font-size: 14px;
-    color: var(--text-sub);
+    color: var(--text-muted);
     border: 1px solid var(--border);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
 
     /* Toggle state */
     opacity: 0;
     pointer-events: none;
-    transform: translateY(10px);
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .help-overlay.visible {
     opacity: 1;
     pointer-events: auto;
-    transform: translateY(0);
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-close-help {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-close-help:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--danger);
+    transform: rotate(90deg);
+}
+
+body.dark-mode .btn-close-help:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .help-title {
