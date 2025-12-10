@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindFlow | Infinite Canvas</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Kalam:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+
+    <!-- Mode Toggle (Global) -->
+    <div id="mode-toggle">
+        <button id="btn-mode-view" class="btn-mode" title="View Mode">👁</button>
+        <button id="btn-mode-edit" class="btn-mode active" title="Edit Mode">✎</button>
+    </div>
+
+    <!-- Theme Toggle -->
+    <button id="btn-theme" title="Toggle Dark Mode">🌙</button>
+
+    <!-- Navigation Bar -->
+    <div id="nav-bar">
+        <button class="nav-btn active" onclick="switchView('canvas')">
+            <span class="icon">▣</span> Map
+        </button>
+        <button class="nav-btn" onclick="switchView('tasks')">
+            <span class="icon">☑</span> Tasks
+        </button>
+    </div>
+
+    <!-- View: Canvas -->
+    <div id="view-canvas" class="view active">
+        <div id="mindflow-container">
+            <div id="mindflow-canvas">
+                <!-- SVG Connections (Behind nodes) -->
+                <svg id="connections-layer">
+                    <!-- Lines injected here -->
+                </svg>
+
+                <!-- Temp Drag Layer (Top of connections, safe from wipes) -->
+                <svg id="temp-layer"></svg>
+
+                <!-- Nodes Container -->
+                <div id="nodes-container">
+                    <!-- Nodes injected here -->
+                </div>
+
+                <!-- Controls Layer (Above nodes for interaction buttons) -->
+                <svg id="controls-layer"></svg>
+            </div>
+        </div>
+
+        <!-- Info Toggle (Map Only) -->
+        <button id="btn-info" title="Toggle Controls">i</button>
+
+
+
+        <!-- Help Info (Map Only) -->
+        <div class="help-overlay">
+            <div class="help-title">Controls</div>
+            <div class="key-combo">
+                <span>Create Node</span> <kbd>Dbl Click</kbd>
+            </div>
+            <div class="key-combo">
+                <span>Pan Canvas</span> <kbd>Space + Drag</kbd>
+            </div>
+            <div class="key-combo">
+                <span>Connect</span> <kbd>Drag Dot</kbd>
+            </div>
+            <div class="key-combo">
+                <span>Delete</span> <kbd>Select + Backspace</kbd>
+            </div>
+        </div>
+    </div>
+
+    <!-- View: Tasks -->
+    <div id="view-tasks" class="view">
+        <div class="task-container">
+            <h1>Tasks</h1>
+            <div class="task-input-wrapper">
+                <input type="text" id="global-task-input" placeholder="Add a new task..." />
+                <button id="btn-add-task">+</button>
+            </div>
+            <div id="global-task-list">
+                <!-- Tasks injected here -->
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="scripts/main.js"></script>
+</body>
+
+</html>
+<!-- Context Menu -->
+<div id="context-menu" class="context-menu" style="display: none;">
+    <div class="menu-item" onclick="handleMenuAction('create-note')">New Note</div>
+    <div class="menu-item" onclick="handleMenuAction('create-image')">New Image</div>
+    <div class="menu-divider"></div>
+    <div class="menu-item" onclick="handleMenuAction('centralize')">Recentering View</div>
+</div>
+
+<!-- Node Context Menu (Dynamic) -->
+<div id="node-context-menu" class="context-menu" style="display: none;">
+    <div class="menu-item" onclick="handleMenuAction('delete-node')">Delete</div>
+    <div class="menu-item" onclick="handleMenuAction('duplicate-node')">Duplicate</div>
+    <div class="menu-divider"></div>
+    <div class="menu-item disabled">Change Color ></div>
+    <!-- Submenu can be complex, skipping for now, relying on toolbar -->
+</div>
+<!-- Global Color Picker -->
+<div id="color-picker" class="context-menu color-grid" style="display: none;">
+    <div class="color-swatch sw-white" onclick="handleColorPick('white')" title="White"></div>
+    <div class="color-swatch sw-red" onclick="handleColorPick('red')" title="Red"></div>
+    <div class="color-swatch sw-orange" onclick="handleColorPick('orange')" title="Orange"></div>
+    <div class="color-swatch sw-yellow" onclick="handleColorPick('yellow')" title="Yellow"></div>
+    <div class="color-swatch sw-green" onclick="handleColorPick('green')" title="Green"></div>
+    <div class="color-swatch sw-blue" onclick="handleColorPick('blue')" title="Blue"></div>
+    <div class="color-swatch sw-purple" onclick="handleColorPick('purple')" title="Purple"></div>
+    <div class="color-swatch sw-pink" onclick="handleColorPick('pink')" title="Pink"></div>
+</div>
