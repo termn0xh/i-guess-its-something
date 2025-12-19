@@ -78,7 +78,9 @@ const state = {
     hoverTimer: null, // Grace period timer
     clipboard: null, // For copy/paste nodes
     currentView: 'canvas', // 'canvas' or 'tasks'
-    globalTasks: loaded.tasks
+    globalTasks: loaded.tasks,
+    taskFilter: 'all', // 'all', 'active', 'completed'
+    taskSort: 'date-desc' // 'date-desc', 'date-asc', 'priority-desc', 'priority-asc', 'due-asc'
 };
 
 // DOM
@@ -528,12 +530,17 @@ function setupEvents() {
     // Global Task Listeners
     const btnAddTask = document.getElementById('btn-add-task');
     const inputTask = document.getElementById('global-task-input');
+    const inputPriority = document.getElementById('task-priority-input'); // New
+    const inputDueDate = document.getElementById('task-due-date-input'); // New
 
     if (btnAddTask && inputTask) {
         const confirmAdd = () => {
             if (inputTask.value.trim()) {
-                addGlobalTask(inputTask.value.trim());
+                addGlobalTask(inputTask.value.trim(), inputPriority?.value, inputDueDate?.value);
                 inputTask.value = '';
+                // Keep priority/date or reset? Resetting is usually better for flow
+                if (inputDueDate) inputDueDate.value = '';
+                if (inputPriority) inputPriority.value = 'medium';
             }
         };
         btnAddTask.onclick = confirmAdd;
@@ -609,11 +616,22 @@ function setupEvents() {
 
     // Theme Toggle
     const btnTheme = document.getElementById('btn-theme');
+    const iconMoon = btnTheme?.querySelector('.icon-moon');
+    const iconSun = btnTheme?.querySelector('.icon-sun');
+    
+    // Helper function to update icon visibility
+    const updateThemeIcons = (isDark) => {
+        if (iconMoon && iconSun) {
+            iconMoon.style.display = isDark ? 'none' : 'block';
+            iconSun.style.display = isDark ? 'block' : 'none';
+        }
+    };
+    
     // Load saved theme
     const savedTheme = localStorage.getItem('mindflow_theme');
     if (savedTheme === 'dark') {
         document.body.classList.add('dark-mode');
-        if (btnTheme) btnTheme.textContent = '☀️';
+        updateThemeIcons(true);
     }
 
     if (btnTheme) {
@@ -621,7 +639,7 @@ function setupEvents() {
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
             localStorage.setItem('mindflow_theme', isDark ? 'dark' : 'light');
-            btnTheme.textContent = isDark ? '☀️' : '🌙';
+            updateThemeIcons(isDark);
         };
     }
 }
@@ -629,13 +647,84 @@ function setupEvents() {
 // ---------------------------
 // Global Task Management
 // ---------------------------
-function addGlobalTask(text) {
+function addGlobalTask(text, priority = 'medium', dueDate = null) {
     const newTask = {
         id: `task-${Date.now()}`,
         text: text,
-        done: false
+        done: false,
+        priority: priority,
+        dueDate: dueDate,
+        createdAt: Date.now(),
+        // Timer fields
+        timeSpent: 0,
+        isRunning: false,
+        lastStartTime: null
     };
     state.globalTasks.push(newTask);
+    saveData();
+    renderGlobalTasks();
+    pushHistory();
+}
+
+function toggleTimer(id) {
+    const task = state.globalTasks.find(t => t.id === id);
+    if (!task) return;
+
+    if (task.isRunning) {
+        const now = Date.now();
+        task.timeSpent += (now - task.lastStartTime);
+        task.isRunning = false;
+        task.lastStartTime = null;
+    } else {
+        task.isRunning = true;
+        task.lastStartTime = Date.now();
+    }
+    saveData();
+    renderGlobalTasks();
+}
+
+function getTaskDuration(task) {
+    let duration = task.timeSpent || 0;
+    if (task.isRunning && task.lastStartTime) {
+        duration += (Date.now() - task.lastStartTime);
+    }
+    return duration;
+}
+
+function formatDuration(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    const pad = (n) => n.toString().padStart(2, '0');
+    if (h > 0) return `${h}:${pad(m)}:${pad(s)}`;
+    return `${m}:${pad(s)}`;
+}
+
+// Global Timer Loop
+setInterval(() => {
+    const anyRunning = state.globalTasks.some(t => t.isRunning);
+    if (anyRunning && state.currentView === 'tasks') {
+        renderGlobalTasks();
+    }
+}, 1000);
+
+function setTaskFilter(filter) {
+    state.taskFilter = filter;
+    // Update UI buttons
+    document.querySelectorAll('.btn-filter').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase() === filter);
+    });
+    renderGlobalTasks();
+}
+
+function setTaskSort(sort) {
+    state.taskSort = sort;
+    renderGlobalTasks();
+}
+
+function clearCompletedTasks() {
+    state.globalTasks = state.globalTasks.filter(t => !t.done);
     saveData();
     renderGlobalTasks();
     pushHistory();
@@ -663,13 +752,80 @@ function renderGlobalTasks() {
     if (!taskList) return;
 
     taskList.innerHTML = '';
-    state.globalTasks.forEach(task => {
+
+    // 1. Filter
+    let filtered = state.globalTasks.filter(t => {
+        if (state.taskFilter === 'active') return !t.done;
+        if (state.taskFilter === 'completed') return t.done;
+        return true;
+    });
+
+    // 2. Sort
+    filtered.sort((a, b) => {
+        const dateA = a.createdAt || 0;
+        const dateB = b.createdAt || 0;
+
+        const prioMap = { high: 3, medium: 2, low: 1 };
+        const prioA = prioMap[a.priority] || 2;
+        const prioB = prioMap[b.priority] || 2;
+
+        switch (state.taskSort) {
+            case 'date-desc': return dateB - dateA;
+            case 'date-asc': return dateA - dateB;
+            case 'priority-desc': return prioB - prioA || dateB - dateA; // Fallback to date
+            case 'priority-asc': return prioA - prioB || dateB - dateA;
+            case 'due-asc':
+                // Null due dates go last
+                if (!a.dueDate) return 1;
+                if (!b.dueDate) return -1;
+                return new Date(a.dueDate) - new Date(b.dueDate);
+            default: return dateB - dateA;
+        }
+    });
+
+    if (filtered.length === 0) {
+        taskList.innerHTML = '<div class="empty-state">No tasks found</div>';
+        return;
+    }
+
+    filtered.forEach(task => {
         const li = document.createElement('li');
-        li.className = `global-task-item ${task.done ? 'done' : ''}`;
+        li.className = `global-task-item ${task.done ? 'done' : ''} priority-${task.priority || 'medium'}`;
+
+        // Date Display
+        let dateHtml = '';
+        if (task.dueDate) {
+            const dateObj = new Date(task.dueDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Check overdue
+            const isOverdue = !task.done && new Date(task.dueDate) < today;
+
+            dateHtml = `<span class="task-date ${isOverdue ? 'overdue' : ''}">${dateObj.toLocaleDateString()}</span>`;
+        }
+
+        const duration = getTaskDuration(task);
+        const timeString = formatDuration(duration);
+        const timerClass = task.isRunning ? 'timer-running' : '';
+        const playIcon = task.isRunning ? '⏸' : '▶';
+
         li.innerHTML = `
-            <input type="checkbox" ${task.done ? 'checked' : ''} onchange="toggleGlobalTask('${task.id}')">
-            <span>${task.text}</span>
-            <button onclick="deleteGlobalTask('${task.id}')">✕</button>
+            <div class="task-left">
+                <input type="checkbox" class="g-task-checkbox" ${task.done ? 'checked' : ''} onchange="toggleGlobalTask('${task.id}')">
+                <div class="task-content">
+                    <span class="task-text">${task.text}</span>
+                    <div class="task-meta">
+                        <span class="badge badge-${task.priority || 'medium'}">${(task.priority || 'medium').toUpperCase()}</span>
+                        ${dateHtml}
+                         <div class="task-timer ${timerClass}">
+                            <button class="btn-timer-toggle" onclick="toggleTimer('${task.id}')">${playIcon}</button>
+                            <span class="timer-display">${timeString}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-delete-task" onclick="deleteGlobalTask('${task.id}')">✕</button>
         `;
         taskList.appendChild(li);
     });

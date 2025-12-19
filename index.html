@@ -19,20 +19,54 @@
 
     <!-- Mode Toggle (Global) -->
     <div id="mode-toggle">
-        <button id="btn-mode-view" class="btn-mode" title="View Mode">👁</button>
-        <button id="btn-mode-edit" class="btn-mode active" title="Edit Mode">✎</button>
+        <button id="btn-mode-view" class="btn-mode" title="View Mode">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+            </svg>
+        </button>
+        <button id="btn-mode-edit" class="btn-mode active" title="Edit Mode">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+            </svg>
+        </button>
     </div>
 
     <!-- Theme Toggle -->
-    <button id="btn-theme" title="Toggle Dark Mode">🌙</button>
+    <button id="btn-theme" title="Toggle Dark Mode">
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <path fill="#64748b"
+                d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
+        </svg>
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+            style="display:none;">
+            <circle cx="12" cy="12" r="4" fill="#fbbf24" />
+            <path stroke="#fbbf24" stroke-linecap="round" stroke-width="2"
+                d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+        </svg>
+    </button>
 
     <!-- Navigation Bar -->
     <div id="nav-bar">
         <button class="nav-btn active" onclick="switchView('canvas')">
-            <span class="icon">▣</span> Map
+            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                fill="currentColor">
+                <rect x="3" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="3" y="14" width="7" height="7" rx="1" />
+                <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+            Map
         </button>
         <button class="nav-btn" onclick="switchView('tasks')">
-            <span class="icon">☑</span> Tasks
+            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="M9 12l2 2 4-4" />
+            </svg>
+            Tasks
         </button>
     </div>
 
@@ -108,12 +142,46 @@
     <div id="view-tasks" class="view">
         <div class="task-container">
             <h1>Tasks</h1>
+
+            <!-- Controls Bar (Sort/Filter) -->
+            <div class="task-controls">
+                <div class="filter-group">
+                    <button class="btn-filter active" onclick="setTaskFilter('all')">All</button>
+                    <button class="btn-filter" onclick="setTaskFilter('active')">Active</button>
+                    <button class="btn-filter" onclick="setTaskFilter('completed')">Completed</button>
+                </div>
+                <div class="sort-group">
+                    <select id="task-sort-select" onchange="setTaskSort(this.value)">
+                        <option value="date-desc">Newest First</option>
+                        <option value="date-asc">Oldest First</option>
+                        <option value="priority-desc">Priority (High-Low)</option>
+                        <option value="priority-asc">Priority (Low-High)</option>
+                        <option value="due-asc">Due Soonest</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Input Area -->
             <div class="task-input-wrapper">
                 <input type="text" id="global-task-input" placeholder="Add a new task..." />
+
+                <select id="task-priority-input" title="Priority">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                </select>
+
+                <input type="date" id="task-due-date-input" title="Due Date" />
+
                 <button id="btn-add-task">+</button>
             </div>
+
             <div id="global-task-list">
                 <!-- Tasks injected here -->
+            </div>
+
+            <div class="task-footer">
+                <button class="btn-text" onclick="clearCompletedTasks()">Clear Completed</button>
             </div>
         </div>
     </div>
