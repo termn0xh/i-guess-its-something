@@ -996,38 +996,38 @@ body.dark-mode .btn-delete-task:hover {
 }
 
 .node.color-red {
-    background: hsla(0, 100%, 96%, 0.9);
-    border-color: #fca5a5;
+    background: hsla(0, 85%, 90%, 0.95);
+    border-color: #f87171;
 }
 
 .node.color-orange {
-    background: hsla(32, 100%, 96%, 0.9);
-    border-color: #fdba74;
+    background: hsla(32, 90%, 88%, 0.95);
+    border-color: #fb923c;
 }
 
 .node.color-yellow {
-    background: hsla(48, 100%, 96%, 0.9);
-    border-color: #fde047;
+    background: hsla(48, 95%, 85%, 0.95);
+    border-color: #facc15;
 }
 
 .node.color-green {
-    background: hsla(142, 70%, 96%, 0.9);
-    border-color: #86efac;
+    background: hsla(142, 65%, 88%, 0.95);
+    border-color: #4ade80;
 }
 
 .node.color-blue {
-    background: hsla(217, 90%, 97%, 0.9);
-    border-color: #93c5fd;
+    background: hsla(217, 85%, 90%, 0.95);
+    border-color: #60a5fa;
 }
 
 .node.color-purple {
-    background: hsla(270, 90%, 97%, 0.9);
-    border-color: #d8b4fe;
+    background: hsla(270, 80%, 90%, 0.95);
+    border-color: #c084fc;
 }
 
 .node.color-pink {
-    background: hsla(330, 80%, 97%, 0.9);
-    border-color: #f9a8d4;
+    background: hsla(330, 75%, 90%, 0.95);
+    border-color: #f472b6;
 }
 
 /* Dark Mode Node Color Overrides (Dark Tints) */
@@ -1164,12 +1164,12 @@ body.dark-mode .node.color-pink {
     /* Center items */
     gap: 12px;
 
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(8px);
     padding: 6px 16px;
     border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
 
     opacity: 0;
     visibility: hidden;
