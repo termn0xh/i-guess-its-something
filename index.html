@@ -208,6 +208,49 @@
     <div class="menu-item disabled">Change Color ></div>
     <!-- Submenu can be complex, skipping for now, relying on toolbar -->
 </div>
+
+<!-- Task Context Menu -->
+<div id="task-context-menu" class="context-menu" style="display: none;">
+    <div class="menu-item" onclick="handleTaskMenuAction('edit')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+        </svg>
+        Edit Task
+    </div>
+    <div class="menu-item" onclick="handleTaskMenuAction('duplicate')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+        </svg>
+        Duplicate
+    </div>
+    <div class="menu-divider"></div>
+    <div class="menu-item" onclick="handleTaskMenuAction('priority-high')">
+        <span class="priority-dot high"></span>
+        High Priority
+    </div>
+    <div class="menu-item" onclick="handleTaskMenuAction('priority-medium')">
+        <span class="priority-dot medium"></span>
+        Medium Priority
+    </div>
+    <div class="menu-item" onclick="handleTaskMenuAction('priority-low')">
+        <span class="priority-dot low"></span>
+        Low Priority
+    </div>
+    <div class="menu-divider"></div>
+    <div class="menu-item" onclick="handleTaskMenuAction('toggle')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 6L9 17l-5-5" />
+        </svg>
+        Toggle Complete
+    </div>
+    <div class="menu-item delete" onclick="handleTaskMenuAction('delete')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+        </svg>
+        Delete Task
+    </div>
+</div>
 <!-- Global Color Picker -->
 <div id="color-picker" class="context-menu color-grid" style="display: none;">
     <div class="color-swatch sw-white" onclick="handleColorPick('white')" title="White"></div>

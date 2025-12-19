@@ -567,8 +567,36 @@ function setupEvents() {
     // Context Menu
     window.addEventListener('contextmenu', e => {
         console.log('Context Menu Event detected', e.clientX, e.clientY);
+
+        // Check if we're clicking on a task item
+        const taskItem = e.target.closest('.global-task-item');
+        if (taskItem) {
+            e.preventDefault();
+            const taskId = taskItem.getAttribute('data-task-id');
+            if (taskId) {
+                openTaskContextMenu(e.clientX, e.clientY, taskId);
+            }
+            return;
+        }
+
+        // Check if we're on the tasks view
+        const tasksView = e.target.closest('#view-tasks');
+        if (tasksView) {
+            e.preventDefault();
+            // No menu for empty space in tasks view
+            return;
+        }
+
         e.preventDefault();
         openContextMenu(e.clientX, e.clientY);
+    });
+
+    // Click outside to close context menus
+    window.addEventListener('click', (e) => {
+        const contextMenu = e.target.closest('.context-menu');
+        if (!contextMenu) {
+            closeContextMenu();
+        }
     });
 
     // Zoom Controls
@@ -618,7 +646,7 @@ function setupEvents() {
     const btnTheme = document.getElementById('btn-theme');
     const iconMoon = btnTheme?.querySelector('.icon-moon');
     const iconSun = btnTheme?.querySelector('.icon-sun');
-    
+
     // Helper function to update icon visibility
     const updateThemeIcons = (isDark) => {
         if (iconMoon && iconSun) {
@@ -626,7 +654,7 @@ function setupEvents() {
             iconSun.style.display = isDark ? 'block' : 'none';
         }
     };
-    
+
     // Load saved theme
     const savedTheme = localStorage.getItem('mindflow_theme');
     if (savedTheme === 'dark') {
@@ -791,6 +819,7 @@ function renderGlobalTasks() {
     filtered.forEach(task => {
         const li = document.createElement('li');
         li.className = `global-task-item ${task.done ? 'done' : ''} priority-${task.priority || 'medium'}`;
+        li.setAttribute('data-task-id', task.id);
 
         // Date Display
         let dateHtml = '';
@@ -827,6 +856,24 @@ function renderGlobalTasks() {
             </div>
             <button class="btn-delete-task" onclick="deleteGlobalTask('${task.id}')">✕</button>
         `;
+
+        // Right-click context menu
+        li.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openTaskContextMenu(e.clientX, e.clientY, task.id);
+        });
+
+        // Double-click to edit
+        const taskTextEl = li.querySelector('.task-text');
+        if (taskTextEl) {
+            taskTextEl.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                startEditingTask(task.id);
+            });
+            taskTextEl.style.cursor = 'pointer';
+        }
+
         taskList.appendChild(li);
     });
 }
@@ -1248,7 +1295,154 @@ function openContextMenu(x, y) {
 function closeContextMenu() {
     document.getElementById('context-menu').style.display = 'none';
     document.getElementById('node-context-menu').style.display = 'none';
+    const taskMenu = document.getElementById('task-context-menu');
+    if (taskMenu) taskMenu.style.display = 'none';
     contextMenuTarget = null;
+}
+
+// ---------------------------
+// Task Context Menu System
+// ---------------------------
+let contextTaskId = null;
+
+function openTaskContextMenu(x, y, taskId) {
+    closeContextMenu();
+    contextTaskId = taskId;
+
+    const menu = document.getElementById('task-context-menu');
+    if (!menu) return;
+
+    // Position menu (ensure it stays within viewport)
+    const menuWidth = 200;
+    const menuHeight = 300;
+    const adjustedX = Math.min(x, window.innerWidth - menuWidth);
+    const adjustedY = Math.min(y, window.innerHeight - menuHeight);
+
+    menu.style.left = `${adjustedX}px`;
+    menu.style.top = `${adjustedY}px`;
+    menu.style.display = 'flex';
+}
+
+window.handleTaskMenuAction = function (action) {
+    if (!contextTaskId) return;
+
+    const task = state.globalTasks.find(t => t.id === contextTaskId);
+    if (!task) {
+        closeContextMenu();
+        return;
+    }
+
+    switch (action) {
+        case 'edit':
+            startEditingTask(contextTaskId);
+            break;
+        case 'duplicate':
+            duplicateTask(contextTaskId);
+            break;
+        case 'priority-high':
+            setTaskPriority(contextTaskId, 'high');
+            break;
+        case 'priority-medium':
+            setTaskPriority(contextTaskId, 'medium');
+            break;
+        case 'priority-low':
+            setTaskPriority(contextTaskId, 'low');
+            break;
+        case 'toggle':
+            toggleGlobalTask(contextTaskId);
+            break;
+        case 'delete':
+            deleteGlobalTask(contextTaskId);
+            break;
+    }
+
+    closeContextMenu();
+};
+
+function duplicateTask(taskId) {
+    const task = state.globalTasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const newTask = {
+        ...task,
+        id: `task-${Date.now()}`,
+        text: task.text + ' (copy)',
+        done: false,
+        createdAt: Date.now(),
+        timeSpent: 0,
+        isRunning: false,
+        lastStartTime: null
+    };
+
+    state.globalTasks.push(newTask);
+    saveData();
+    renderGlobalTasks();
+    pushHistory();
+}
+
+function setTaskPriority(taskId, priority) {
+    const task = state.globalTasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    task.priority = priority;
+    saveData();
+    renderGlobalTasks();
+    pushHistory();
+}
+
+function startEditingTask(taskId) {
+    const taskEl = document.querySelector(`[data-task-id="${taskId}"]`);
+    if (!taskEl) return;
+
+    const task = state.globalTasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const textEl = taskEl.querySelector('.task-text');
+    if (!textEl) return;
+
+    const originalText = task.text;
+
+    // Replace with input
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = originalText;
+    input.className = 'task-edit-input';
+    input.style.cssText = `
+        flex: 1;
+        padding: 4px 8px;
+        border: 2px solid var(--primary);
+        border-radius: 6px;
+        font-size: 16px;
+        font-family: inherit;
+        background: var(--bg-surface);
+        color: var(--text-main);
+        outline: none;
+    `;
+
+    textEl.replaceWith(input);
+    input.focus();
+    input.select();
+
+    const finishEdit = (save) => {
+        if (save && input.value.trim()) {
+            task.text = input.value.trim();
+            saveData();
+            pushHistory();
+        }
+        renderGlobalTasks();
+    };
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            finishEdit(true);
+        } else if (e.key === 'Escape') {
+            finishEdit(false);
+        }
+    });
+
+    input.addEventListener('blur', () => {
+        finishEdit(true);
+    });
 }
 
 // ---------------------------

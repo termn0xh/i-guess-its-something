@@ -1689,8 +1689,93 @@ body.dark-mode #btn-info {
     color: var(--danger);
 }
 
-.menu-divider {
-    height: 1px;
-    background: rgba(0, 0, 0, 0.05);
-    margin: 4px 0;
+.menu-item.delete:hover {
+    background: var(--danger);
+    color: white;
+}
+
+/* Menu Item Icons */
+.menu-item svg {
+    margin-right: 10px;
+    vertical-align: middle;
+    opacity: 0.7;
+}
+
+.menu-item:hover svg {
+    opacity: 1;
+}
+
+/* Priority Dots in Context Menu */
+.priority-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+.priority-dot.high {
+    background: var(--danger);
+}
+
+.priority-dot.medium {
+    background: var(--accent);
+}
+
+.priority-dot.low {
+    background: var(--primary);
+}
+
+/* Task Item Animations */
+.global-task-item {
+    animation: task-slide-in 0.2s ease-out;
+}
+
+@keyframes task-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.global-task-item.done {
+    animation: task-complete 0.3s ease-out;
+}
+
+@keyframes task-complete {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(0.98);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Improved Empty State */
+.empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    color: var(--text-muted);
+    background: var(--bg-surface-glass);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--border);
+}
+
+.empty-state::before {
+    content: '📋';
+    display: block;
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
 }
